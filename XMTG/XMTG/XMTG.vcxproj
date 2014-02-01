@@ -78,6 +78,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Header.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="IO.cpp" />
+    <ClCompile Include="SourceManager.cpp" />
+    <ClCompile Include="XMTG.cpp" />
+    <ClCompile Include="XMTtoCilk.cpp" />
+    <ClCompile Include="XMTtoCUDA.cpp" />
+    <ClCompile Include="XMTtoSerial.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
