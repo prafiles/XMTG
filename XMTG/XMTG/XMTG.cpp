@@ -20,13 +20,14 @@
 #include "XMTtoCilk.cpp"
 
 //Main Runtime
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv []) {
 	bool flag_CheckErrorHandle = true; //flag added to all operations to look for check cudaerrors.
 	bool flag_CheckThread = true; // $ or ThreadID is within Range.
 	bool flag_MakeExecutable = false; //To output executable with Source.
 	bool flag_InFileSpecified = false; //Infile is specified or not.
 	bool flag_OutFileSpecified = false; //Outfile is modified or is assumed default.
 	bool flag_Verbose = false; //Enable or disable Verbose Operation.
+	bool flag_MeasureRunTime = false; //Add code to measure the run time.
 	OutputType outType = OutputType::CUDA; //Set Default Compile type
 	unsigned long maxThreadCap = 1000; //Max number of threads.
 	std::string xmtProgram, source, inFile, curArgStr, selfPath, outFile, outProgram;
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (curArgStr == "-h" || curArgStr == "--help") {
-			std::cout << (std::string) "Syntax : XMTtoCUDA [-s] [-n <power>] [-e] [-t] [-x] [-v] infile [-o outfile]" + ENDLINE + ENDLINE
+			std::cout << (std::string) "Syntax : XMTtoCUDA [-s] [-n <power>] [-e] [-t] [-x] [-v] [-time] infile [-o outfile]" + ENDLINE + ENDLINE
 				+ "Options:" + ENDLINE
 				+ "infile = Specifiy the input XMT C Program File or Path. (Mandatory)" + ENDLINE
 				+ "-s = Translate program to serial C not CUDA. ( -n -e -t get disabled)." + ENDLINE
@@ -57,7 +58,8 @@ int main(int argc, char *argv[]) {
 				+ "-n = Maximum number of threads. Expressed as power of 2 (greater than 10)." + ENDLINE
 				+ "     Example -n 10 means 2^10 = 1024 Threads." + ENDLINE
 				+ "     Default is XMTC 1000 Threads. Change accordingly." + ENDLINE
-				+ "     If actual number of threads is less, the extra threads exit safely." + ENDLINE + ENDLINE;
+				+ "     If actual number of threads is less, the extra threads exit safely." + ENDLINE
+				+ "-time = Add code to measure execution time. (Optional for Windows. Use time in others.)" + ENDLINE + ENDLINE;
 			return 0;
 		}
 		if (curArgStr == "-s") {
@@ -87,6 +89,10 @@ int main(int argc, char *argv[]) {
 		if (curArgStr == "-o") {
 			outFile = std::string(argv[curArg++]);
 			flag_OutFileSpecified = true;
+			continue;
+		}
+		if (curArgStr == "-time") {
+			flag_MeasureRunTime = true;
 			continue;
 		}
 		if (curArgStr[0] == '-') {
@@ -157,6 +163,8 @@ int main(int argc, char *argv[]) {
 		converter.spawntoKernels();
 		outProgram = converter.getCUDAProgram();
 	}
+	if (flag_MeasureRunTime)
+		outProgram = sourceMgr.insertTimerFunctions(outProgram);
 	//Process End
 
 	if (flag_Verbose) std::cout << "Finished translation successfully!" << ENDLINE;

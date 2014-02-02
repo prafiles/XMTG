@@ -561,6 +561,34 @@ public:
 	bool isValidIdentifierChar(char ch) {
 		return (isalnum(ch) || (ch == '_'));
 	}
+
+	//Function to insert code to measure time.
+	std::string insertTimerFunctions(std::string program) {
+#ifdef _WIN32
+		std::string code = "";
+		code = (std::string) "#include <windows.h>" + ENDLINE
+			+ "double PCFreq = 0.0; __int64 CounterStart = 0;" + ENDLINE
+			+ "void StartCounter() {" + ENDLINE
+			+ "	   LARGE_INTEGER li;" + ENDLINE
+			+ "	   if (!QueryPerformanceFrequency(&li))" + ENDLINE
+			+ "	   printf(\"QueryPerformanceFrequency failed!\n\");" + ENDLINE
+			+ "	   PCFreq = double(li.QuadPart) / 1000000.0;" + ENDLINE
+			+ "	   QueryPerformanceCounter(&li);" + ENDLINE
+			+ "	   CounterStart = li.QuadPart;" + ENDLINE
+			+ "}" + ENDLINE
+			+ "double GetCounter() {" + ENDLINE
+			+ "    LARGE_INTEGER li;" + ENDLINE
+			+ "    QueryPerformanceCounter(&li); " + ENDLINE
+			+ "    return double(li.QuadPart - CounterStart) / PCFreq;" + ENDLINE
+			+ "}" + ENDLINE;
+		program = code + program;
+		size_t locMain = locateMainBeg(program);
+		program.insert(locMain, (std::string) "\tStartCounter();" + ENDLINE);
+		locMain = locateMainEnd(program);
+		program.insert(locMain, (std::string) "printf(\"Time taken to execute = %f microsecs.\", GetCounter());" + ENDLINE);
+#endif
+		return program;
+	}
 };
 
 #endif // !SourceManager_CPP_
